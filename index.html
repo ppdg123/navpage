@@ -1720,10 +1720,21 @@ function showBookmarkModal({title, nameVal='', urlVal='', iconVal='favicon', onS
 
 // 根据 URL 自动推断默认图标
 const URL_ICON_RULES = [
-  { domain: 'sphinx.woa.com',      icon: 'tabler:device-laptop' },
-  { domain: 'mmdata.woa.com',      icon: 'tabler:database' },
-  { domain: 'iwiki.woa.com',       icon: 'tabler:books' },
-  { domain: 'doc.weixin.qq.com',   icon: 'tabler:file-description' },
+  { domain: 'github.com',          icon: 'tabler:brand-github' },
+  { domain: 'gitlab.com',          icon: 'tabler:brand-gitlab' },
+  { domain: 'notion.so',           icon: 'tabler:brand-notion' },
+  { domain: 'figma.com',           icon: 'tabler:brand-figma' },
+  { domain: 'wikipedia.org',       icon: 'tabler:brand-wikipedia' },
+  { domain: 'docs.google.com',     icon: 'tabler:file-description' },
+  { domain: 'mail.google.com',     icon: 'tabler:mail' },
+  { domain: 'calendar.google.com', icon: 'tabler:calendar' },
+  { domain: 'youtube.com',         icon: 'tabler:brand-youtube' },
+  { domain: 'twitter.com',         icon: 'tabler:brand-twitter' },
+  { domain: 'x.com',               icon: 'tabler:brand-x' },
+  { domain: 'reddit.com',          icon: 'tabler:brand-reddit' },
+  { domain: 'stackoverflow.com',   icon: 'tabler:brand-stackoverflow' },
+  { domain: 'hub.docker.com',      icon: 'tabler:brand-docker' },
+  { domain: 'vercel.com',          icon: 'tabler:brand-vercel' },
 ];
 
 function guessIconByUrl(url) {
