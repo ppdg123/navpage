@@ -4,7 +4,7 @@ from flask import Flask, request, jsonify, send_from_directory, send_file, Respo
 
 app = Flask(__name__)
 DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data.json')
-STATIC_DIR = '/www/wwwrt/nav.wangfan.net'
+STATIC_DIR = os.path.dirname(os.path.abspath(__file__))
 FAVICON_CACHE_DIR = os.path.join(STATIC_DIR, 'favicon_cache')
 os.makedirs(FAVICON_CACHE_DIR, exist_ok=True)
 
