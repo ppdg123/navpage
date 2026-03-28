@@ -1,0 +1,1781 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>导航</title>
+<script src="/marked.min.js"></script>
+<script src="/icon-names.js"></script>
+<script src="/simple-colors.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f0f2f5; min-height: 100vh; user-select: none; }
+
+/* Tab bar */
+.tab-bar { background: #1a73e8; display: flex; align-items: center; padding: 0 16px; height: 44px; gap: 4px; }
+.tab-bar .tab { color: rgba(255,255,255,0.75); padding: 6px 14px; border-radius: 4px; cursor: pointer; font-size: 14px; white-space: nowrap; }
+.tab-bar .tab.active { background: rgba(255,255,255,0.2); color: #fff; }
+.tab-bar .tab:hover:not(.active) { background: rgba(255,255,255,0.1); color: #fff; }
+.tab-bar .tab-actions { margin-left: auto; display: flex; gap: 6px; }
+.tab-bar .btn-icon { background: rgba(255,255,255,0.15); border: none; color: #fff; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 13px; }
+.tab-bar .btn-icon:hover { background: rgba(255,255,255,0.25); }
+.tab-bar .btn-icon.edit-active { background: rgba(255,255,255,0.35); }
+
+/* Search */
+.search-bar { display: flex; justify-content: center; padding: 20px 16px; }
+.search-wrap { display: flex; align-items: center; background: #fff; border-radius: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); padding: 8px 16px; width: 100%; max-width: 560px; gap: 10px; position: relative; }
+.search-engine-btn { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px; color: #444; background: #f1f3f4; border-radius: 16px; padding: 4px 10px; white-space: nowrap; border: none; }
+.search-engine-btn img { width: 16px; height: 16px; }
+.search-input { flex: 1; border: none; outline: none; font-size: 15px; background: transparent; }
+.search-submit { background: #1a73e8; color: #fff; border: none; border-radius: 16px; padding: 5px 14px; cursor: pointer; font-size: 13px; }
+
+/* Columns layout */
+.columns { display: flex; gap: 12px; padding: 0 16px 20px; align-items: flex-start; }
+.column { flex: 1; display: flex; flex-direction: column; gap: 12px; min-width: 0;  }
+
+/* Widget */
+.widget { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); overflow: hidden; position: relative; transition: box-shadow 0.15s; width: 100%; }
+.widget.markdown-widget { background: #fffbe6; }
+.widget-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px 6px; }
+.widget-title { font-size: 14px; font-weight: 600; color: #444; }
+.widget-actions { display: flex; gap: 4px; }
+.widget-actions button { background: none; border: none; cursor: pointer; color: #999; font-size: 13px; padding: 2px 5px; border-radius: 3px; }
+.widget-actions button:hover { background: #f1f3f4; color: #333; }
+
+/* Bookmark search dropdown */
+.bm-search-dropdown { position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: #fff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 200; overflow: hidden; max-height: 320px; overflow-y: auto; }
+.bm-search-item { display: flex; align-items: center; gap: 10px; padding: 8px 16px; cursor: pointer; text-decoration: none; color: #333; transition: background 0.1s; }
+.bm-search-item:hover { background: #f1f3f4; }
+.bm-search-item .bsi-icon { width: 18px; height: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.bm-search-item .bsi-icon img { width: 18px; height: 18px; border-radius: 3px; }
+.bm-search-item .bsi-icon div { width: 18px !important; height: 18px !important; }
+.bm-search-item .bsi-name { font-size: 13px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bm-search-item .bsi-url { font-size: 11px; color: #aaa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+.bm-search-empty { padding: 12px 16px; font-size: 13px; color: #aaa; text-align: center; }
+
+.filelist { padding: 4px 8px 6px; min-height: 40px; column-width: 140px; column-gap: 0; }
+.fl-item { display: flex; align-items: center; gap: 7px; padding: 4px 8px; text-decoration: none; color: #333; font-size: 12px; border-radius: 4px; transition: background 0.1s; cursor: pointer; position: relative; break-inside: avoid; }
+.fl-item:hover { background: #f1f3f4; }
+.fl-item .fl-icon { width: 14px; height: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.fl-item .fl-icon img { width: 14px; height: 14px; border-radius: 2px; }
+.fl-item .fl-icon svg { width: 14px; height: 14px; }
+.fl-item .fl-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.edit-mode .fl-item { cursor: pointer; }
+.fl-add-btn { display: flex; align-items: center; gap: 6px; padding: 4px 8px; color: #aaa; font-size: 12px; cursor: pointer; border: none; background: none; width: 100%; break-inside: avoid; }
+.fl-add-btn:hover { color: #1a73e8; background: #f0f6ff; border-radius: 4px; }
+
+/* Bookmark grid */
+.bookmark-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); padding: 4px 8px 6px; gap: 0; min-height: 40px; position: relative; }
+.bm-slot { width: 100%; height: 66px; display: inline-flex; position: relative; justify-content: center; transition: transform 0.18s cubic-bezier(.4,0,.2,1); }
+.bookmark-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 3px; border-radius: 6px; cursor: pointer; width: 60px; text-decoration: none; transition: background 0.1s; position: absolute; inset: 0; }
+.bookmark-item:hover { background: #f1f3f4; }
+.bookmark-item img { width: 28px; height: 28px; border-radius: 4px; }
+.bookmark-item .bm-emoji { font-size: 22px; line-height: 28px; }
+.bookmark-item span { font-size: 12px; color: #444; text-align: center; word-break: break-all; max-width: 56px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
+/* Edit mode bookmark */
+.edit-mode .bm-slot { cursor: grab; }
+.edit-mode .bm-slot:active { cursor: grabbing; }
+.bm-slot .bm-edit-btn { display: none; position: absolute; top: -2px; right: -2px; background: #ea4335; border: none; border-radius: 50%; width: 18px; height: 18px; color: #fff; font-size: 11px; cursor: pointer; line-height: 18px; text-align: center; padding: 0; z-index: 2; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+.edit-mode .bm-slot .bm-edit-btn { display: block; }
+
+/* Ghost (dragging clone) */
+.bm-ghost { position: fixed; pointer-events: none; z-index: 9999; opacity: 0.92; transform: scale(1.1); box-shadow: 0 8px 24px rgba(0,0,0,0.18); border-radius: 6px; background: #fff; width: 72px; transition: none; }
+
+/* Drop placeholder */
+.bm-placeholder { width: 60px; height: 66px; border: 2px dashed #1a73e8; border-radius: 6px; background: #f0f6ff; flex-shrink: 0; }
+
+.add-bookmark-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px 4px; border-radius: 6px; cursor: pointer; width: 60px; height: 66px; border: 1.5px dashed #ccc; background: none; color: #aaa; font-size: 20px; flex-shrink: 0; }
+.add-bookmark-btn:hover { border-color: #1a73e8; color: #1a73e8; background: #f0f6ff; }
+
+/* Markdown */
+.markdown-content { padding: 10px 14px 14px; font-size: 14px; color: #333; line-height: 1.6; overflow-x: auto; user-select: text; cursor: text; }
+.markdown-content h1,.markdown-content h2,.markdown-content h3 { margin: 8px 0 4px; font-size: 14px; font-weight: 600; }
+.markdown-content p { margin: 4px 0; }
+.markdown-content pre { background: rgba(0,0,0,0.06); border-radius: 4px; padding: 8px; overflow-x: auto; font-size: 12px; margin: 6px 0; }
+.markdown-content code { font-family: monospace; background: rgba(0,0,0,0.06); padding: 1px 4px; border-radius: 3px; font-size: 12px; }
+.markdown-content pre code { background: none; padding: 0; }
+.markdown-editor { width: 100%; min-height: 80px; border: none; outline: none; padding: 10px 14px; font-size: 13px; font-family: monospace; background: #fffbe6; resize: none; overflow: hidden; user-select: text; }
+
+/* Widget drag */
+.edit-mode .widget-header { cursor: grab; }
+.widget.widget-dragging { opacity: 0.4; }
+.widget.widget-drop-above { box-shadow: 0 -3px 0 #1a73e8, 0 1px 4px rgba(0,0,0,0.08); }
+.widget.widget-drop-below { box-shadow: 0 3px 0 #1a73e8, 0 1px 4px rgba(0,0,0,0.08); }
+
+/* Add widget / col */
+.add-widget-btn { border: 2px dashed #ccc; border-radius: 10px; padding: 14px; text-align: center; cursor: pointer; color: #aaa; font-size: 13px; background: none; width: 100%; }
+.add-widget-btn:hover { border-color: #1a73e8; color: #1a73e8; background: #f0f6ff; }
+
+/* Widget inner tabs */
+.widget-tabs { display: flex; align-items: center; gap: 2px; padding: 4px 10px 0; border-bottom: 1px solid #eee; flex-wrap: wrap; }
+.widget-tab { font-size: 12px; padding: 3px 10px 4px; border-radius: 6px 6px 0 0; cursor: pointer; color: #666; background: none; border: none; border-bottom: 2px solid transparent; transition: all 0.15s; white-space: nowrap; }
+.widget-tab:hover { color: #1a73e8; background: #f0f6ff; }
+.widget-tab.active { color: #1a73e8; font-weight: 600; border-bottom: 2px solid #1a73e8; }
+.widget-tab-add { font-size: 16px; line-height: 1; padding: 2px 7px 4px; border-radius: 6px; cursor: pointer; color: #aaa; background: none; border: none; }
+.widget-tab-add:hover { color: #1a73e8; background: #f0f6ff; }
+.widget-tab-del { font-size: 10px; margin-left: 3px; color: #bbb; cursor: pointer; vertical-align: middle; }
+.widget-tab-del:hover { color: #ea4335; }
+
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.modal { background: #fff; border-radius: 10px; padding: 24px; width: 360px; max-width: 90vw; }
+.modal h3 { margin-bottom: 16px; font-size: 16px; }
+.modal label { display: block; font-size: 13px; color: #555; margin-bottom: 4px; margin-top: 12px; }
+.modal input, .modal select { width: 100%; border: 1px solid #ddd; border-radius: 6px; padding: 8px 10px; font-size: 14px; outline: none; }
+.modal input:focus, .modal select:focus { border-color: #1a73e8; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+.btn { border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer; font-size: 14px; }
+.btn-primary { background: #1a73e8; color: #fff; }
+.btn-primary:hover { background: #1558b0; }
+.btn-secondary { background: #f1f3f4; color: #333; }
+.btn-secondary:hover { background: #e2e5e8; }
+.btn-danger { background: #ea4335; color: #fff; }
+.btn-danger:hover { background: #c5221f; }
+
+/* Engine dropdown */
+.bg-picker-btn { background: rgba(255,255,255,0.15); border: none; color: #fff; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 5px; }
+.bg-picker-btn:hover { background: rgba(255,255,255,0.25); }
+.bg-picker-btn .bg-dot { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid rgba(0,0,0,0.2); display: inline-block; flex-shrink: 0; }
+.bg-color-dropdown { position: absolute; background: #fff; border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); padding: 10px; z-index: 200; top: 48px; right: 0; display: flex; flex-wrap: wrap; gap: 6px; width: 200px; }
+.bg-color-swatch { width: 28px; height: 28px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; transition: border-color 0.1s; flex-shrink: 0; }
+.bg-color-swatch:hover, .bg-color-swatch.active { border-color: #1a73e8; }
+.engine-dropdown { position: absolute; background: #fff; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); padding: 6px; z-index: 100; min-width: 160px; top: 44px; left: 0; }
+.engine-dropdown .engine-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 5px; cursor: pointer; font-size: 13px; }
+.engine-dropdown .engine-item:hover { background: #f1f3f4; }
+.engine-dropdown .engine-item img { width: 16px; height: 16px; }
+.engine-dropdown .engine-sep { height: 1px; background: #eee; margin: 4px 0; }
+@media (max-width: 600px) {
+  .columns { flex-direction: column; padding: 0 10px 20px; gap: 10px; }
+  .column { flex: none; width: 100%; }
+  .filelist { column-width: unset; columns: 1; }
+  .tab-bar { padding: 0 8px; gap: 4px; }
+  .tab { padding: 10px 10px; font-size: 13px; }
+  .search-bar { padding: 12px 10px; }
+  .search-wrap { max-width: 100%; padding: 6px 10px; gap: 6px; }
+  .search-engine-btn { padding: 4px 6px; font-size: 12px; flex-shrink: 0; }
+  .search-input { font-size: 14px; min-width: 0; }
+  .search-submit { padding: 5px 10px; font-size: 12px; flex-shrink: 0; white-space: nowrap; }
+  .bg-picker-btn { padding: 4px 6px; font-size: 12px; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ===== DATA =====
+let data = {};
+
+// ===== HEAT =====
+const HEAT_CAP = 50;
+
+function heatDecay() {
+  if (!data.heat) { data.heat = {}; return; }
+  const today = new Date().toDateString();
+  if (data.heatLastDecay === today) return;
+  const days = data.heatLastDecay
+    ? Math.max(1, Math.round((new Date(today) - new Date(data.heatLastDecay)) / 86400000))
+    : 1;
+  Object.keys(data.heat).forEach(k => {
+    data.heat[k] = data.heat[k] - 2 * days;
+    if (data.heat[k] <= 0) delete data.heat[k];
+  });
+  data.heatLastDecay = today;
+  save();
+}
+
+function recordHeat(id) {
+  if (data.heatEnabled === false) return;
+  if (!data.heat) data.heat = {};
+  data.heat[id] = Math.min((data.heat[id] || 0) + 1, HEAT_CAP);
+  save();
+}
+
+function getHeatBg(id, iconColor) {
+  if (data.heatEnabled === false) return '';
+  const v = (data.heat && data.heat[id]) || 0;
+  if (v < 1) return '';
+  const alpha = (Math.min(v, HEAT_CAP) / HEAT_CAP) * 0.4;
+  let r = 26, g = 115, b = 232; // 默认蓝色
+  if (iconColor && iconColor.startsWith('#')) {
+    const hex = iconColor.replace('#','');
+    if (hex.length === 6) {
+      r = parseInt(hex.slice(0,2),16);
+      g = parseInt(hex.slice(2,4),16);
+      b = parseInt(hex.slice(4,6),16);
+    } else if (hex.length === 3) {
+      r = parseInt(hex[0]+hex[0],16);
+      g = parseInt(hex[1]+hex[1],16);
+      b = parseInt(hex[2]+hex[2],16);
+    }
+  }
+  return `rgba(${r},${g},${b},${alpha.toFixed(3)})`;
+}
+let activeTabId = '';
+let editMode = false;
+let saveTimer = null;
+
+const EDIT_AUTH_KEY = 'nav_edit_authed';
+const EDIT_PWD_HASH = '397b0f5bb6a69c2acb6385f303cd319496fce2b69eff9d2ad68cb03ae64a2540';
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function requireEditAuth(onSuccess) {
+  if (localStorage.getItem(EDIT_AUTH_KEY) === '1') { onSuccess(); return; }
+  let overlay = document.createElement('div'); overlay.className = 'modal-overlay';
+  let box = document.createElement('div'); box.className = 'modal'; box.style.maxWidth = '320px';
+  box.innerHTML = `<h3>编辑模式</h3><label>请输入密码</label>
+    <input id="auth-pwd" type="password" placeholder="密码" style="margin-top:8px;" autocomplete="current-password">
+    <div id="auth-err" style="color:#d93025;font-size:12px;margin-top:6px;min-height:16px;"></div>
+    <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end;">
+      <button id="auth-cancel" class="btn" style="background:#f1f3f4;color:#333;">取消</button>
+      <button id="auth-ok" class="btn btn-primary">确定</button>
+    </div>`;
+  overlay.appendChild(box); document.body.appendChild(overlay);
+  const pwdInput = box.querySelector('#auth-pwd');
+  const errEl = box.querySelector('#auth-err');
+  setTimeout(() => pwdInput.focus(), 50);
+
+  async function doAuth() {
+    const val = pwdInput.value;
+    if (!val) { errEl.textContent = '请输入密码'; return; }
+    if (!crypto || !crypto.subtle) {
+      errEl.textContent = '请使用 HTTPS 访问以启用安全验证';
+      return;
+    }
+    errEl.textContent = '验证中...';
+    try {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(val));
+      const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+      if (hash === EDIT_PWD_HASH) {
+        localStorage.setItem(EDIT_AUTH_KEY, '1');
+        overlay.remove(); onSuccess();
+      } else {
+        errEl.textContent = '密码错误，请重试';
+        pwdInput.value = ''; pwdInput.focus();
+      }
+    } catch(e) {
+      errEl.textContent = '验证失败：' + e.message;
+    }
+  }
+  box.querySelector('#auth-ok').onclick = doAuth;
+  pwdInput.onkeydown = (e) => { if (e.key === 'Enter') doAuth(); if (e.key === 'Escape') overlay.remove(); };
+  box.querySelector('#auth-cancel').onclick = () => overlay.remove();
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+}
+
+// ===== UNDO =====
+const UNDO_MAX = 3;
+let undoStack = []; // array of JSON snapshots
+
+function pushUndo() {
+  undoStack.push(JSON.stringify(data));
+  if (undoStack.length > UNDO_MAX) undoStack.shift();
+  updateUndoBtn();
+}
+
+function undo() {
+  if (!undoStack.length) return;
+  data = JSON.parse(undoStack.pop());
+  save();
+  render();
+  updateUndoBtn();
+}
+
+function updateUndoBtn() {
+  let btn = document.getElementById('undo-btn');
+  if (!btn) return;
+  btn.disabled = undoStack.length === 0;
+  btn.style.opacity = undoStack.length === 0 ? '0.4' : '1';
+  btn.title = undoStack.length ? `撤销 (还可撤销 ${undoStack.length} 次)` : '没有可撤销的操作';
+}
+
+// Ctrl+Z global shortcut
+document.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && editMode) {
+    e.preventDefault();
+    undo();
+  }
+});
+
+async function loadData() {
+  try {
+    const res = await fetch('/api/data');
+    data = await res.json();
+    activeTabId = data.tabs[0]?.id;
+    heatDecay();
+    render();
+  } catch(e) {
+    document.getElementById('app').innerHTML = '<p style="padding:40px;color:#e00">加载数据失败，请检查后端服务是否运行。</p>';
+  }
+}
+
+function save() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    await fetch('/api/data', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) });
+  }, 500);
+}
+
+function uid() { return 'id_' + Math.random().toString(36).slice(2); }
+function getFavicon(url) {
+  try { return `/api/favicon?domain=${new URL(url).hostname}`; }
+  catch { return ''; }
+}
+
+// ===== MODAL =====
+function showModal(html, onSubmit, onDelete, onInit) {
+  let overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `<div class="modal">${html}</div>`;
+  overlay.querySelector('.modal').addEventListener('click', e => e.stopPropagation());
+  overlay.addEventListener('click', closeModal);
+  document.body.appendChild(overlay);
+  if (onDelete) overlay.querySelector('#modal-delete')?.addEventListener('click', () => { closeModal(); onDelete(); });
+  overlay.querySelector('#modal-cancel')?.addEventListener('click', closeModal);
+  overlay.querySelector('#modal-submit')?.addEventListener('click', () => { if (onSubmit(overlay.querySelector('.modal'))) closeModal(); });
+  if (onInit) onInit(overlay.querySelector('.modal'));
+  setTimeout(() => overlay.querySelector('input')?.focus(), 50);
+}
+function closeModal() { document.querySelector('.modal-overlay')?.remove(); }
+
+// ===== RENDER =====
+function render() {
+  document.getElementById('app').innerHTML = '';
+  document.getElementById('app').appendChild(renderTabBar());
+  document.getElementById('app').appendChild(renderSearch());
+  document.getElementById('app').appendChild(renderColumns());
+  if (editMode) document.body.classList.add('edit-mode');
+  else document.body.classList.remove('edit-mode');
+  // 应用页面背景色
+  document.body.style.background = data.pageBgColor || '#f0f2f5';
+  updateUndoBtn();
+}
+
+function renderTabBar() {
+  let bar = document.createElement('div');
+  bar.className = 'tab-bar';
+  data.tabs.forEach(tab => {
+    let t = document.createElement('div');
+    t.className = 'tab' + (tab.id === activeTabId ? ' active' : '');
+    t.textContent = tab.name;
+    t.onclick = () => { activeTabId = tab.id; render(); };
+    if (editMode) t.ondblclick = (e) => { e.stopPropagation(); editTab(tab); };
+    bar.appendChild(t);
+  });
+  let actions = document.createElement('div');
+  actions.className = 'tab-actions';
+  if (editMode) {
+    let a = document.createElement('button'); a.className='btn-icon'; a.textContent='+ Tab'; a.onclick=addNewTab; actions.appendChild(a);
+    let d = document.createElement('button'); d.className='btn-icon'; d.textContent='删除当前Tab'; d.onclick=deleteCurrentTab; actions.appendChild(d);
+    let u = document.createElement('button'); u.className='btn-icon'; u.id='undo-btn'; u.textContent='↩ 撤销';
+    u.style.opacity='0.4'; u.disabled=true;
+    u.onclick = undo;
+    actions.appendChild(u);
+  }
+  let eb = document.createElement('button');
+  eb.className = 'btn-icon' + (editMode ? ' edit-active' : '');
+  eb.textContent = editMode ? '✓ 完成' : '✎ 编辑';
+  eb.onclick = () => {
+    if (editMode) { editMode = false; render(); return; }
+    requireEditAuth(() => { editMode = true; render(); });
+  };
+
+  // 背景色选择器（仅编辑模式）
+  if (editMode) {
+  const PAGE_BG_COLORS = [
+    {c:'#f0f2f5', n:'默认灰'}, {c:'#ffffff', n:'纯白'},
+    {c:'#fafafa', n:'浅白'}, {c:'#f5f5f5', n:'浅灰'},
+    {c:'#e8f0fe', n:'浅蓝'}, {c:'#e6f4ea', n:'浅绿'},
+    {c:'#fff3e0', n:'浅橙'}, {c:'#fef9e7', n:'浅黄'},
+    {c:'#fce8e6', n:'浅红'}, {c:'#f3e5f5', n:'浅紫'},
+    {c:'#e0f7fa', n:'浅青'}, {c:'#fce4ec', n:'浅粉'},
+    {c:'#f1f8e9', n:'草绿'}, {c:'#ede7f6', n:'薰衣草'},
+    {c:'#e8eaf6', n:'靛蓝'}, {c:'#e0f2f1', n:'薄荷'},
+  ];
+  let curBg = data.pageBgColor || '#f0f2f5';
+
+  let bgBtn = document.createElement('button'); bgBtn.className = 'bg-picker-btn';
+  let dot = document.createElement('span'); dot.className = 'bg-dot'; dot.style.background = curBg;
+  bgBtn.appendChild(dot); bgBtn.appendChild(document.createTextNode('背景'));
+
+  bgBtn.onclick = (e) => {
+    e.stopPropagation();
+    document.querySelector('.bg-color-dropdown')?.remove();
+    let dd = document.createElement('div'); dd.className = 'bg-color-dropdown';
+    PAGE_BG_COLORS.forEach(({c, n}) => {
+      let sw = document.createElement('div'); sw.className = 'bg-color-swatch' + (c === curBg ? ' active' : '');
+      sw.style.background = c; sw.title = n;
+      sw.onclick = () => {
+        curBg = c; data.pageBgColor = c; save();
+        document.body.style.background = c;
+        dot.style.background = c;
+        dd.querySelectorAll('.bg-color-swatch').forEach(s => s.classList.toggle('active', s.style.background === c || s.style.backgroundColor === c));
+      };
+      dd.appendChild(sw);
+    });
+    // 定位到按钮右下角
+    let rect = bgBtn.getBoundingClientRect();
+    dd.style.position = 'fixed';
+    dd.style.top = (rect.bottom + 6) + 'px';
+    dd.style.right = (window.innerWidth - rect.right) + 'px';
+    dd.style.left = 'auto';
+    document.body.appendChild(dd);
+    setTimeout(() => document.addEventListener('click', function h(){ dd.remove(); document.removeEventListener('click',h); }), 0);
+  };
+  // 热力开关按钮
+  let heatOn = data.heatEnabled !== false;
+  let heatBtn = document.createElement('button'); heatBtn.className = 'bg-picker-btn';
+  heatBtn.title = heatOn ? '热力图已开启，点击关闭' : '热力图已关闭，点击开启';
+  heatBtn.textContent = heatOn ? '🔥' : '🔥';
+  heatBtn.style.opacity = heatOn ? '1' : '0.35';
+  heatBtn.onclick = () => {
+    data.heatEnabled = !heatOn;
+    save(); render();
+  };
+
+  actions.appendChild(heatBtn);
+  actions.appendChild(bgBtn);
+  } // end editMode
+  actions.appendChild(eb);
+  bar.appendChild(actions);
+  return bar;
+}
+
+function renderSearch() {
+  let wrap = document.createElement('div');
+  wrap.className = 'search-bar';
+  let eng = data.searchEngines.find(e => e.id === data.activeEngine) || data.searchEngines[0];
+  wrap.innerHTML = `<div class="search-wrap">
+    <button class="search-engine-btn" id="engine-btn"><img src="${eng.icon}" onerror="this.style.display='none'">${eng.name} <span>▾</span></button>
+    <input class="search-input" id="search-input" placeholder="搜索书签 / 搜索引擎...">
+    <button class="search-submit" id="search-submit">搜索</button>
+  </div>`;
+  setTimeout(() => {
+    document.getElementById('engine-btn').onclick = (e) => { e.stopPropagation(); toggleEngineDropdown(document.getElementById('engine-btn')); };
+    document.getElementById('search-submit').onclick = () => { closeBmDropdown(); doSearch(document.getElementById('search-input').value); };
+    document.getElementById('search-input').onkeydown = (e) => {
+      if (e.key === 'Enter') { closeBmDropdown(); doSearch(e.target.value); }
+      if (e.key === 'Escape') { closeBmDropdown(); e.target.value = ''; }
+      if (e.key === 'ArrowDown') { e.preventDefault(); focusBmDropdownItem(0); }
+    };
+    document.getElementById('search-input').oninput = (e) => {
+      let q = e.target.value.trim();
+      if (q.length === 0) { closeBmDropdown(); return; }
+      let results = searchBookmarks(q);
+      showBmDropdown(results, q, document.getElementById('search-input').closest('.search-wrap'));
+    };
+  }, 0);
+  return wrap;
+}
+
+function getAllBookmarks() {
+  let result = [];
+  for (let tab of (data.tabs || [])) {
+    for (let col of (tab.columns || [])) {
+      for (let w of (col.widgets || [])) {
+        let allBms = [];
+        if (w.tabs && w.tabs.length > 0) {
+          for (let st of w.tabs) allBms = allBms.concat(st.bookmarks || []);
+        } else {
+          allBms = w.bookmarks || [];
+        }
+        for (let bm of allBms) {
+          if (bm.url && bm.name) result.push({ bm, widget: w });
+        }
+      }
+    }
+  }
+  return result;
+}
+
+function searchBookmarks(q) {
+  let lq = q.toLowerCase();
+  return getAllBookmarks()
+    .filter(({ bm }) => bm.name.toLowerCase().includes(lq) || bm.url.toLowerCase().includes(lq))
+    .slice(0, 12);
+}
+
+function closeBmDropdown() {
+  document.querySelector('.bm-search-dropdown')?.remove();
+}
+
+function focusBmDropdownItem(idx) {
+  let items = document.querySelectorAll('.bm-search-item');
+  if (items[idx]) items[idx].focus();
+}
+
+function showBmDropdown(results, q, wrap) {
+  closeBmDropdown();
+  let dd = document.createElement('div'); dd.className = 'bm-search-dropdown';
+
+  if (results.length === 0) {
+    let empty = document.createElement('div'); empty.className = 'bm-search-empty';
+    empty.textContent = '没有匹配的书签';
+    dd.appendChild(empty);
+  } else {
+    results.forEach(({ bm, widget }, idx) => {
+      let item = document.createElement('a');
+      item.className = 'bm-search-item';
+      item.href = bm.url; item.target = '_blank'; item.rel = 'noopener';
+      item.tabIndex = 0;
+
+      let iconEl = document.createElement('span'); iconEl.className = 'bsi-icon';
+      renderIconInEl(iconEl, bm.icon, getFavicon(bm.url), widget.iconColor);
+      iconEl.querySelectorAll('div,img').forEach(c => { c.style.width='18px'; c.style.height='18px'; });
+
+      let nameEl = document.createElement('span'); nameEl.className = 'bsi-name';
+      // 高亮匹配文字
+      let lq = q.toLowerCase(), lname = bm.name.toLowerCase(), hi = lname.indexOf(lq);
+      if (hi >= 0) {
+        nameEl.innerHTML = escapeHtml(bm.name.slice(0, hi))
+          + `<b style="color:#1a73e8">${escapeHtml(bm.name.slice(hi, hi + q.length))}</b>`
+          + escapeHtml(bm.name.slice(hi + q.length));
+      } else {
+        nameEl.textContent = bm.name;
+      }
+
+      let urlEl = document.createElement('span'); urlEl.className = 'bsi-url';
+      try { urlEl.textContent = new URL(bm.url).hostname; } catch { urlEl.textContent = ''; }
+
+      item.appendChild(iconEl); item.appendChild(nameEl); item.appendChild(urlEl);
+      item.onclick = () => { closeBmDropdown(); document.getElementById('search-input').value = ''; };
+      item.onkeydown = (e) => {
+        if (e.key === 'ArrowDown') { e.preventDefault(); focusBmDropdownItem(idx + 1); }
+        if (e.key === 'ArrowUp')   { e.preventDefault(); idx > 0 ? focusBmDropdownItem(idx - 1) : document.getElementById('search-input').focus(); }
+        if (e.key === 'Escape')    { closeBmDropdown(); document.getElementById('search-input').focus(); }
+      };
+      dd.appendChild(item);
+    });
+  }
+
+  wrap.appendChild(dd);
+  // 点击外部关闭
+  setTimeout(() => document.addEventListener('click', function handler(e) {
+    if (!dd.contains(e.target) && e.target.id !== 'search-input') { closeBmDropdown(); document.removeEventListener('click', handler); }
+  }), 0);
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function doSearch(q) {
+  if (!q.trim()) return;
+  let eng = data.searchEngines.find(e => e.id === data.activeEngine) || data.searchEngines[0];
+  window.open(eng.url.replace('{query}', encodeURIComponent(q)), '_blank');
+}
+
+function toggleEngineDropdown(anchor) {
+  document.querySelector('.engine-dropdown')?.remove();
+  let dd = document.createElement('div'); dd.className = 'engine-dropdown';
+  data.searchEngines.forEach(eng => {
+    let item = document.createElement('div'); item.className = 'engine-item';
+    item.innerHTML = `<img src="${eng.icon}" onerror="this.style.display='none'">${eng.name}`;
+    item.onclick = (e) => { e.stopPropagation(); data.activeEngine = eng.id; save(); render(); };
+    dd.appendChild(item);
+  });
+  if (editMode) {
+    let sep = document.createElement('div'); sep.className = 'engine-sep'; dd.appendChild(sep);
+    let add = document.createElement('div'); add.className = 'engine-item'; add.textContent = '+ 添加搜索引擎';
+    add.onclick = (e) => { e.stopPropagation(); dd.remove(); addEngine(); };
+    dd.appendChild(add);
+  }
+  anchor.closest('.search-wrap').appendChild(dd);
+  setTimeout(() => document.addEventListener('click', () => dd.remove(), {once:true}), 0);
+}
+
+function renderColumns() {
+  let tab = data.tabs.find(t => t.id === activeTabId);
+  if (!tab) return document.createElement('div');
+  let cols = document.createElement('div'); cols.className = 'columns';
+  tab.columns.forEach((col, ci) => {
+    let colEl = document.createElement('div'); colEl.className = 'column';
+    colEl.dataset.colId = col.id;  // 供 widget drag 识别目标列
+    col.widgets.forEach((w, wi) => colEl.appendChild(renderWidget(w, tab, col, wi)));
+    if (editMode) {
+      let btn = document.createElement('button'); btn.className = 'add-widget-btn'; btn.textContent = '+ 添加控件';
+      btn.onclick = () => addWidget(tab, col); colEl.appendChild(btn);
+    }
+    cols.appendChild(colEl);
+  });
+  if (editMode) {
+    let btn = document.createElement('button'); btn.className = 'add-widget-btn';
+    btn.style.cssText = 'writing-mode:vertical-rl;height:80px;width:40px;flex-shrink:0'; btn.textContent = '+ 列';
+    btn.onclick = () => { tab.columns.push({id:uid(),widgets:[]}); save(); render(); };
+    cols.appendChild(btn);
+  }
+  return cols;
+}
+
+// ===== WIDGET DRAG (between widgets/columns) =====
+let wDragSrc = null; // {colId, wi}
+
+function renderWidget(widget, tab, col, wi) {
+  let el = document.createElement('div');
+  el.className = 'widget' + (widget.type==='markdown'?' markdown-widget':'');
+  el.dataset.colId = col.id; el.dataset.wi = wi;
+  // 应用背景色
+  if (widget.bgColor) {
+    el.style.background = widget.bgColor;
+    if (widget.type === 'markdown') el.style.background = widget.bgColor;
+  }
+
+  let header = document.createElement('div'); header.className = 'widget-header';
+  let title = document.createElement('div'); title.className = 'widget-title'; title.textContent = widget.title||'';
+  header.appendChild(title);
+
+  if (editMode) {
+    header.style.cursor = 'grab';
+    header.onmousedown = (e) => {
+      if (e.button !== 0 || e.target.tagName === 'BUTTON') return;
+      e.preventDefault();
+      header.style.cursor = 'grabbing';
+      startWidgetDrag(e, tab, col, wi, el);
+      document.addEventListener('mouseup', () => { header.style.cursor = 'grab'; }, { once: true });
+    };
+    let acts = document.createElement('div'); acts.className = 'widget-actions';
+    let eb = document.createElement('button'); eb.textContent='✎'; eb.title='编辑标题';
+    eb.onclick = (e) => { e.stopPropagation(); editWidgetTitle(widget); };
+    let cb = document.createElement('button'); cb.textContent='🎨'; cb.title='背景颜色';
+    cb.onclick = (e) => { e.stopPropagation(); editWidgetBgColor(widget); };
+    let db = document.createElement('button'); db.textContent='✕'; db.title='删除控件';
+    db.onclick = () => { if(confirm('删除这个控件？')){ pushUndo(); col.widgets.splice(wi,1);save();render();} };
+    acts.appendChild(eb); acts.appendChild(cb); acts.appendChild(db); header.appendChild(acts);
+  }
+
+  el.appendChild(header);
+
+  if (widget.type === 'bookmarks' || widget.type === 'filelist') {
+    // 子 Tab 支持：有 widget.tabs 时渲染 tab 栏
+    if (widget.tabs && widget.tabs.length > 0) {
+      // 确保有 activeTab 状态（存在内存里，不持久化）
+      if (!widget._activeTabId || !widget.tabs.find(t => t.id === widget._activeTabId)) {
+        widget._activeTabId = widget.tabs[0].id;
+      }
+      el.appendChild(renderWidgetTabBar(widget, el));
+      let activeSubTab = widget.tabs.find(t => t.id === widget._activeTabId) || widget.tabs[0];
+      if (widget.type === 'filelist') {
+        el.appendChild(renderFileList(widget, activeSubTab.bookmarks));
+      } else {
+        el.appendChild(renderBookmarks(widget, activeSubTab.bookmarks));
+      }
+    } else {
+      if (widget.type === 'filelist') {
+        el.appendChild(renderFileList(widget, widget.bookmarks));
+      } else {
+        el.appendChild(renderBookmarks(widget, widget.bookmarks));
+      }
+    }
+  } else if (widget.type === 'markdown') {
+    let mdContent = renderMarkdown(widget);
+    el.appendChild(mdContent);
+    // 编辑模式下在 actions 里注入 👁 预览切换按钮
+    if (editMode) {
+      let ta = mdContent.querySelector('textarea');
+      let preview = mdContent.querySelector('.markdown-content');
+      let pvBtn = document.createElement('button'); pvBtn.textContent='👁'; pvBtn.title='预览';
+      pvBtn.onclick = (e) => {
+        e.stopPropagation();
+        if (preview.style.display === 'none') {
+          preview.innerHTML = marked.parse(widget.content||'');
+          preview.style.display=''; ta.style.display='none';
+          pvBtn.style.color='#1a73e8'; pvBtn.title='编辑';
+        } else {
+          preview.style.display='none'; ta.style.display='';
+          pvBtn.style.color=''; pvBtn.title='预览';
+          ta.style.height='auto'; ta.style.height=ta.scrollHeight+'px';
+        }
+      };
+      el.querySelector('.widget-actions').insertBefore(pvBtn, el.querySelector('.widget-actions').firstChild);
+    }
+  }
+  return el;
+}
+
+function renderWidgetTabBar(widget, widgetEl) {
+  let bar = document.createElement('div'); bar.className = 'widget-tabs';
+
+  function rebuildBody() {
+    // 替换 body 区域
+    let old = widgetEl.querySelector('.bookmark-grid') || widgetEl.querySelector('.filelist');
+    if (old) old.remove();
+    let activeSubTab = widget.tabs.find(t => t.id === widget._activeTabId) || widget.tabs[0];
+    if (widget.type === 'filelist') {
+      widgetEl.appendChild(renderFileList(widget, activeSubTab.bookmarks));
+    } else {
+      widgetEl.appendChild(renderBookmarks(widget, activeSubTab.bookmarks));
+    }
+    // 重绘 tab bar 激活状态
+    bar.querySelectorAll('.widget-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tabId === widget._activeTabId);
+    });
+  }
+
+  widget.tabs.forEach((subTab, ti) => {
+    let btn = document.createElement('button'); btn.className = 'widget-tab';
+    btn.dataset.tabId = subTab.id;
+    if (subTab.id === widget._activeTabId) btn.classList.add('active');
+
+    if (editMode) {
+      // 双击重命名
+      let nameSpan = document.createElement('span'); nameSpan.textContent = subTab.name;
+      btn.appendChild(nameSpan);
+      nameSpan.ondblclick = (e) => {
+        e.stopPropagation();
+        let old = subTab.name;
+        let v = prompt('重命名 Tab:', old);
+        if (v && v.trim() && v.trim() !== old) {
+          pushUndo(); subTab.name = v.trim(); save(); render();
+        }
+      };
+      // 删除按钮
+      if (widget.tabs.length > 1) {
+        let del = document.createElement('span'); del.className='widget-tab-del'; del.textContent='✕';
+        del.onclick = (e) => {
+          e.stopPropagation();
+          if (!confirm(`删除 Tab「${subTab.name}」及其所有书签？`)) return;
+          pushUndo();
+          widget.tabs.splice(ti, 1);
+          if (widget._activeTabId === subTab.id) widget._activeTabId = widget.tabs[0].id;
+          save(); render();
+        };
+        btn.appendChild(del);
+      }
+    } else {
+      btn.textContent = subTab.name;
+    }
+
+    btn.onclick = (e) => {
+      if (e.target.classList.contains('widget-tab-del')) return;
+      widget._activeTabId = subTab.id;
+      rebuildBody();
+    };
+    bar.appendChild(btn);
+  });
+
+  // 编辑模式：添加子 Tab 按钮
+  if (editMode) {
+    let addBtn = document.createElement('button'); addBtn.className='widget-tab-add'; addBtn.textContent='+'; addBtn.title='新增子 Tab';
+    addBtn.onclick = () => {
+      let name = prompt('新子 Tab 名称:');
+      if (!name || !name.trim()) return;
+      pushUndo();
+      let newTab = { id: uid(), name: name.trim(), bookmarks: [] };
+      widget.tabs.push(newTab);
+      widget._activeTabId = newTab.id;
+      save(); render();
+    };
+    bar.appendChild(addBtn);
+  }
+
+  return bar;
+}
+
+// flag: 控件拖拽进行中，书签 hover 不显示蓝框
+let widgetDragging = false;
+
+function startWidgetDrag(e, tab, col, wi, el) {
+  let rect = el.getBoundingClientRect();
+  let ox = e.clientX - rect.left, oy = e.clientY - rect.top;
+  widgetDragging = true;
+
+  // Ghost
+  let ghost = el.cloneNode(true);
+  ghost.style.cssText = `position:fixed;width:${rect.width}px;opacity:0.88;pointer-events:none;z-index:9999;
+    box-shadow:0 8px 28px rgba(0,0,0,0.22);border-radius:10px;left:${rect.left}px;top:${rect.top}px;`;
+  document.body.appendChild(ghost);
+
+  // Placeholder
+  let placeholder = document.createElement('div');
+  placeholder.style.cssText = `height:${rect.height}px;border-radius:10px;
+    background:rgba(26,115,232,0.06);border:2px dashed #1a73e8;box-sizing:border-box;`;
+  el.parentNode.insertBefore(placeholder, el);
+  el.style.display = 'none';
+
+  // Track current drop destination
+  let destColId = col.id;
+  let destIdx = wi; // insert-before index in destCol.widgets
+
+  // Build list of all .widget elements (excl self) + add-widget-btn, with metadata
+  function getDropItems() {
+    let items = [];
+    document.querySelectorAll('.column').forEach(colEl => {
+      let cid = colEl.dataset.colId;
+      let idx = 0;
+      Array.from(colEl.children).forEach(child => {
+        if (child === placeholder) return; // skip placeholder itself
+        if (child.classList.contains('widget') && child !== el) {
+          items.push({ el: child, colId: cid, insertBefore: idx, insertAfter: idx + 1 });
+          idx++;
+        } else if (child.classList.contains('add-widget-btn')) {
+          items.push({ el: child, colId: cid, insertBefore: idx, insertAfter: idx, isAddBtn: true });
+        }
+      });
+    });
+    return items;
+  }
+
+  function onMove(ev) {
+    ghost.style.left = (ev.clientX - ox) + 'px';
+    ghost.style.top  = (ev.clientY - oy) + 'px';
+
+    let best = null;
+    getDropItems().forEach(item => {
+      let r = item.el.getBoundingClientRect();
+      if (ev.clientX >= r.left - 8 && ev.clientX <= r.right + 8 &&
+          ev.clientY >= r.top - 12 && ev.clientY <= r.bottom + 12) {
+        best = item;
+      }
+    });
+
+    if (best) {
+      let before = best.isAddBtn || (ev.clientY < best.el.getBoundingClientRect().top + best.el.getBoundingClientRect().height / 2);
+      destColId = best.colId;
+      destIdx = before ? best.insertBefore : best.insertAfter;
+      // Move placeholder in DOM to show where widget will land
+      if (before) {
+        best.el.parentNode.insertBefore(placeholder, best.el);
+      } else {
+        best.el.parentNode.insertBefore(placeholder, best.el.nextSibling);
+      }
+    }
+  }
+
+  function onUp(ev) {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    widgetDragging = false;
+    ghost.remove();
+    placeholder.remove();
+    el.style.display = '';
+
+    let srcCol  = tab.columns.find(c => c.id === col.id);
+    let dstCol  = tab.columns.find(c => c.id === destColId);
+    if (!srcCol || !dstCol) { render(); return; }
+
+    pushUndo();
+    let moved = srcCol.widgets.splice(wi, 1)[0];
+    let insertAt = destIdx;
+    if (dstCol === srcCol && wi < insertAt) insertAt--;
+    insertAt = Math.max(0, Math.min(insertAt, dstCol.widgets.length));
+    dstCol.widgets.splice(insertAt, 0, moved);
+    save(); render();
+  }
+
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+// ===== BOOKMARK DRAG (smooth, cross-widget) =====
+// Global drag state
+let bmDrag = null;
+/*
+bmDrag = {
+  srcWidget, srcTab, srcColId,
+  bmIdx,       // original index
+  ghost,       // floating clone el
+  ox, oy,      // offset within ghost
+  placeholder, // DOM node in grid
+  currentGrid, // which .bookmark-grid the placeholder is in
+  currentGridWidget, // widget data for currentGrid
+  currentGridIdx,    // insert index in currentGrid's bookmarks
+}
+*/
+
+function makeBmEl(bm, iconColor) {
+  let item = document.createElement('a');
+  item.className = 'bookmark-item';
+  item.href = bm.url; item.target='_blank'; item.rel='noopener';
+  // 热度背景
+  let hbg = getHeatBg(bm.id, iconColor);
+  if (hbg) item.style.background = hbg;
+  item.addEventListener('click', () => { if (!editMode) recordHeat(bm.id); });
+  let iconWrap = document.createElement('div');
+  iconWrap.style.cssText = 'width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;';
+  renderIconInEl(iconWrap, bm.icon, getFavicon(bm.url), iconColor);
+  let label = document.createElement('span'); label.textContent = bm.name;
+  item.appendChild(iconWrap); item.appendChild(label);
+  return item;
+}
+
+function renderBookmarks(widget, bookmarks) {
+  let bms = bookmarks || widget.bookmarks;
+  let iconColor = widget.iconColor || null;
+  let grid = document.createElement('div'); grid.className='bookmark-grid';
+  grid._widget = widget;
+  grid._bookmarks = bms;
+
+  bms.forEach((bm, bi) => {
+    let slot = document.createElement('div'); slot.className='bm-slot'; slot.dataset.bi=bi;
+    slot.appendChild(makeBmEl(bm, iconColor));
+
+    if (editMode) {
+      // 阻止 <a> 默认跳转
+      slot.querySelector('a').addEventListener('click', e => e.preventDefault());
+
+      // 区分点击（编辑）和拖拽（移动）
+      let dragStarted = false;
+
+      slot.onmousedown = (e) => {
+        if (e.button !== 0) return;
+        e.preventDefault(); e.stopPropagation();
+        dragStarted = false;
+
+        const startX = e.clientX, startY = e.clientY;
+
+        function onMove(ev) {
+          if (Math.abs(ev.clientX - startX) > 5 || Math.abs(ev.clientY - startY) > 5) {
+            dragStarted = true;
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+            startBmDrag(e, widget, bms, bi, slot);
+          }
+        }
+        function onUp(ev) {
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          if (!dragStarted) {
+            editBookmark(widget, bm, bi, bms);
+          }
+        }
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      };
+
+      slot.querySelector('a').style.outline = '2px dashed transparent';
+      slot.querySelector('a').style.borderRadius = '6px';
+      slot.querySelector('a').onmouseenter = () => {
+        if (widgetDragging) return;
+        slot.querySelector('a').style.outline = '2px dashed #1a73e8';
+      };
+      slot.querySelector('a').onmouseleave = () => {
+        slot.querySelector('a').style.outline = '2px dashed transparent';
+      };
+    }
+
+    grid.appendChild(slot);
+  });
+
+  if (editMode) {
+    let addBtn = document.createElement('button'); addBtn.className='add-bookmark-btn'; addBtn.innerHTML='+';
+    addBtn.onclick = () => addBookmark(widget, bms);
+    grid.appendChild(addBtn);
+  }
+  return grid;
+}
+
+function startBmDrag(e, widget, bms, bi, slot) {
+  let bm = bms[bi];
+  let rect = slot.getBoundingClientRect();
+
+  // create ghost
+  let ghost = document.createElement('div'); ghost.className='bm-ghost';
+  ghost.style.width='72px'; ghost.style.height='80px';
+  ghost.appendChild(makeBmEl(bm));
+  ghost.style.left=(rect.left)+'px'; ghost.style.top=(rect.top)+'px';
+  document.body.appendChild(ghost);
+
+  // placeholder in original position
+  let placeholder = document.createElement('div'); placeholder.className='bm-placeholder';
+  let grid = slot.closest('.bookmark-grid');
+  grid.insertBefore(placeholder, slot);
+  slot.style.display='none';
+
+  let ox = e.clientX - rect.left, oy = e.clientY - rect.top;
+
+  bmDrag = { widget, bms, bi, bm, ghost, placeholder, ox, oy,
+    currentGrid: grid, currentGridWidget: widget, currentGridBms: bms, currentIdx: bi };
+
+  function onMove(ev) {
+    ghost.style.left=(ev.clientX-ox)+'px';
+    ghost.style.top=(ev.clientY-oy)+'px';
+    updateBmPlaceholder(ev.clientX, ev.clientY);
+  }
+  function onUp(ev) {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    commitBmDrop();
+    slot.style.display='';
+  }
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+function updateBmPlaceholder(cx, cy) {
+  if (!bmDrag) return;
+  // find which grid we're over
+  let grids = document.querySelectorAll('.bookmark-grid');
+  let targetGrid = null;
+  for (let g of grids) {
+    let r = g.getBoundingClientRect();
+    if (cx>=r.left && cx<=r.right && cy>=r.top && cy<=r.bottom+40) { targetGrid=g; break; }
+  }
+  if (!targetGrid) return;
+
+  // remove placeholder from old grid if different
+  if (bmDrag.placeholder.parentNode !== targetGrid) {
+    bmDrag.placeholder.parentNode?.removeChild(bmDrag.placeholder);
+    targetGrid.insertBefore(bmDrag.placeholder, targetGrid.querySelector('.add-bookmark-btn'));
+    bmDrag.currentGrid = targetGrid;
+    bmDrag.currentGridWidget = targetGrid._widget;
+    bmDrag.currentGridBms = targetGrid._bookmarks || targetGrid._widget?.bookmarks;
+  }
+
+  // find insert position among slots in targetGrid
+  let slots = Array.from(targetGrid.querySelectorAll('.bm-slot')).filter(s=>s.style.display!=='none');
+  let insertBefore = null;
+  let insertIdx = (bmDrag.currentGridBms || bmDrag.currentGridWidget.bookmarks).length; // default: end
+
+  for (let i=0; i<slots.length; i++) {
+    let sr = slots[i].getBoundingClientRect();
+    let midX = sr.left + sr.width/2;
+    let midY = sr.top + sr.height/2;
+    // simple: compare center distances, pick first slot whose center is past cursor
+    if (cy < sr.top + sr.height && cx < midX) {
+      insertBefore = slots[i];
+      insertIdx = parseInt(slots[i].dataset.bi);
+      break;
+    }
+    if (cy < sr.top) {
+      insertBefore = slots[i];
+      insertIdx = parseInt(slots[i].dataset.bi);
+      break;
+    }
+    insertIdx = parseInt(slots[i].dataset.bi) + 1;
+  }
+
+  bmDrag.currentIdx = insertIdx;
+  // move placeholder
+  if (insertBefore) {
+    targetGrid.insertBefore(bmDrag.placeholder, insertBefore);
+  } else {
+    let addBtn = targetGrid.querySelector('.add-bookmark-btn');
+    targetGrid.insertBefore(bmDrag.placeholder, addBtn || null);
+  }
+}
+
+function commitBmDrop() {
+  if (!bmDrag) return;
+  let { widget, bms, bi, bm, ghost, placeholder, currentGridWidget, currentGridBms, currentIdx } = bmDrag;
+  let destBms = currentGridBms || currentGridWidget.bookmarks;
+  ghost.remove();
+  placeholder.remove();
+  bmDrag = null;
+
+  pushUndo();
+  bms.splice(bi, 1);
+  let insertAt = currentIdx;
+  if (destBms === bms && bi < currentIdx) insertAt--;
+  insertAt = Math.max(0, Math.min(insertAt, destBms.length));
+  destBms.splice(insertAt, 0, bm);
+  save(); render();
+}
+
+function renderMarkdown(widget) {
+  if (editMode) {
+    let wrap = document.createElement('div');
+    let ta = document.createElement('textarea'); ta.className='markdown-editor'; ta.value=widget.content||'';
+    function autoResize() { ta.style.height='auto'; ta.style.height=ta.scrollHeight+'px'; }
+    ta.oninput = () => { widget.content=ta.value; save(); autoResize(); };
+    let preview = document.createElement('div'); preview.className='markdown-content';
+    preview.style.cssText = 'display:none;border-top:1px solid #e8d96a;';
+    wrap.appendChild(ta); wrap.appendChild(preview);
+    setTimeout(autoResize, 0);
+    return wrap;
+  }
+  let div = document.createElement('div'); div.className='markdown-content';
+  div.innerHTML = marked.parse(widget.content||'');
+  return div;
+}
+
+function renderFileList(widget, bms) {
+  let container = document.createElement('div'); container.className = 'filelist';
+
+  bms.forEach((bm, bi) => {
+    let item = document.createElement('a');
+    item.className = 'fl-item';
+    item.href = bm.url || '#';
+    item.target = '_blank';
+    item.rel = 'noopener';
+
+    // 小图标
+    let iconEl = document.createElement('span'); iconEl.className = 'fl-icon';
+    renderIconInEl(iconEl, bm.icon, getFavicon(bm.url), widget.iconColor);
+    iconEl.querySelectorAll('div,img').forEach(c => {
+      c.style.width = '13px'; c.style.height = '13px';
+    });
+
+    let name = document.createElement('span'); name.className = 'fl-name'; name.textContent = bm.name || bm.url;
+    item.appendChild(iconEl);
+    item.appendChild(name);
+
+    // 热度背景
+    let hbg = getHeatBg(bm.id, widget.iconColor);
+    if (hbg) item.style.background = hbg;
+    if (!editMode) item.addEventListener('click', () => recordHeat(bm.id));
+
+    if (editMode) {
+      item.onclick = (e) => { e.preventDefault(); editBookmark(widget, bm, bi, bms); };
+      item.title = '点击编辑';
+    }
+
+    container.appendChild(item);
+  });
+
+  if (editMode) {
+    let addBtn = document.createElement('button'); addBtn.className = 'fl-add-btn';
+    addBtn.textContent = '＋ 添加';
+    addBtn.onclick = () => addBookmark(widget, bms);
+    container.appendChild(addBtn);
+  }
+
+  return container;
+}
+
+// ===== EDIT ACTIONS =====
+function editTab(tab) {
+  showModal(`<h3>编辑 Tab</h3><label>名称</label><input id="m-name" value="${tab.name}">
+    <div class="modal-actions"><button class="btn btn-danger" id="modal-delete">删除</button><button class="btn btn-secondary" id="modal-cancel">取消</button><button class="btn btn-primary" id="modal-submit">保存</button></div>`,
+    (modal) => { pushUndo(); tab.name=modal.querySelector('#m-name').value.trim()||tab.name; save(); render(); return true; },
+    () => deleteCurrentTab());
+}
+function addNewTab() {
+  pushUndo();
+  let tab={id:uid(),name:'新Tab',columns:[{id:uid(),widgets:[]}]};
+  data.tabs.push(tab); activeTabId=tab.id; save(); render();
+}
+function deleteCurrentTab() {
+  if (data.tabs.length<=1){alert('至少保留一个Tab');return;}
+  pushUndo();
+  data.tabs=data.tabs.filter(t=>t.id!==activeTabId); activeTabId=data.tabs[0].id; save(); render();
+}
+function addWidget(tab, col) {
+  showModal(`<h3>添加控件</h3><label>类型</label><select id="m-type"><option value="bookmarks">书签组</option><option value="filelist">文件列表</option><option value="markdown">Markdown 文本</option></select><label>标题</label><input id="m-title" placeholder="标题">
+    <div class="modal-actions"><button class="btn btn-secondary" id="modal-cancel">取消</button><button class="btn btn-primary" id="modal-submit">添加</button></div>`,
+    (modal) => {
+      pushUndo();
+      let type=modal.querySelector('#m-type').value, title=modal.querySelector('#m-title').value.trim()||(type==='bookmarks'?'书签':type==='filelist'?'文件列表':'备忘');
+      let w={id:uid(),type,title}; if(type==='bookmarks'||type==='filelist')w.bookmarks=[]; if(type==='markdown')w.content='';
+      col.widgets.push(w); save(); render(); return true;
+    });
+}
+// 预设浅色背景色板
+const BG_COLORS = [
+  { val: '#ffffff', label: '白色' },
+  { val: '#f0f2f5', label: '浅灰' },
+  { val: '#e8f0fe', label: '浅蓝' },
+  { val: '#e6f4ea', label: '浅绿' },
+  { val: '#fce8e6', label: '浅红' },
+  { val: '#fff3e0', label: '浅橙' },
+  { val: '#fef9e7', label: '浅黄' },
+  { val: '#f3e5f5', label: '浅紫' },
+  { val: '#e0f7fa', label: '浅青' },
+  { val: '#fce4ec', label: '浅粉' },
+  { val: '#f1f8e9', label: '浅草绿' },
+  { val: '#ede7f6', label: '浅薰衣草' },
+];
+
+function editWidgetBgColor(widget) {
+  let curColor = widget.bgColor || '#ffffff';
+  let swatchHtml = BG_COLORS.map(c =>
+    `<div class="w-swatch" data-val="${c.val}" title="${c.label}"
+      style="width:24px;height:24px;border-radius:6px;background:${c.val};cursor:pointer;border:2px solid ${c.val===curColor?'#1a73e8':'#ddd'};box-sizing:border-box;display:inline-block;"></div>`
+  ).join('');
+
+  showModal(`<h3>控件背景色</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center;">
+      ${swatchHtml}
+      <input type="color" id="m-bg-color" value="${curColor}" style="width:28px;height:28px;border:none;padding:0;cursor:pointer;border-radius:4px;background:none;">
+      <input type="text" id="m-bg-hex" value="${curColor}" style="border:1px solid #ddd;border-radius:6px;padding:3px 7px;font-size:12px;width:80px;font-family:monospace;">
+    </div>
+    <div style="margin-top:12px;">
+      <div id="m-bg-preview" style="height:40px;border-radius:8px;border:1px solid #eee;background:${curColor};transition:background 0.15s;"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" id="modal-cancel">取消</button>
+      <button class="btn btn-secondary" id="m-bg-reset" style="margin-right:auto;">重置</button>
+      <button class="btn btn-primary" id="modal-submit">保存</button>
+    </div>`,
+    (modal) => {
+      pushUndo();
+      let hex = modal.querySelector('#m-bg-hex').value.trim();
+      widget.bgColor = /^#[0-9a-fA-F]{6}$/.test(hex) ? hex : curColor;
+      save(); render(); return true;
+    },
+    null,
+    (modal) => {
+      function updatePreview(v) {
+        modal.querySelector('#m-bg-preview').style.background = v;
+      }
+      modal.querySelectorAll('.w-swatch').forEach(sw => {
+        sw.onclick = () => {
+          modal.querySelectorAll('.w-swatch').forEach(s => s.style.borderColor='#ddd');
+          sw.style.borderColor = '#1a73e8';
+          modal.querySelector('#m-bg-color').value = sw.dataset.val;
+          modal.querySelector('#m-bg-hex').value = sw.dataset.val;
+          updatePreview(sw.dataset.val);
+        };
+      });
+      modal.querySelector('#m-bg-color').oninput = (e) => {
+        modal.querySelector('#m-bg-hex').value = e.target.value;
+        updatePreview(e.target.value);
+      };
+      modal.querySelector('#m-bg-hex').oninput = (e) => {
+        let v = e.target.value.trim();
+        if (/^#[0-9a-fA-F]{6}$/.test(v)) { modal.querySelector('#m-bg-color').value = v; updatePreview(v); }
+      };
+      modal.querySelector('#m-bg-reset').onclick = () => {
+        modal.querySelector('#m-bg-hex').value = '#ffffff';
+        modal.querySelector('#m-bg-color').value = '#ffffff';
+        updatePreview('#ffffff');
+        modal.querySelectorAll('.w-swatch').forEach(s => s.style.borderColor='#ddd');
+        modal.querySelector('.w-swatch[data-val="#ffffff"]').style.borderColor = '#1a73e8';
+      };
+    }
+  );
+}
+
+function editWidgetTitle(widget) {
+  let hasTabs = widget.tabs && widget.tabs.length > 0;
+  let curColor = widget.iconColor || '#1a73e8';
+
+  // 生成色块 HTML
+  let swatchHtml = ICON_COLORS.map(c =>
+    `<div class="w-swatch" data-val="${c.val}" title="${c.label}"
+      style="width:20px;height:20px;border-radius:50%;background:${c.val};cursor:pointer;border:2px solid ${c.val===curColor?'#333':'transparent'};box-sizing:border-box;display:inline-block;"></div>`
+  ).join('');
+
+  showModal(`<h3>编辑控件</h3>
+    <label>标题</label><input id="m-title" value="${(widget.title||'').replace(/"/g,'&quot;')}">
+    <label style="margin-top:12px;display:block;">图标颜色</label>
+    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px;">
+      ${swatchHtml}
+      <input type="color" id="m-color" value="${curColor}" style="width:26px;height:26px;border:none;padding:0;cursor:pointer;border-radius:4px;background:none;">
+      <input type="text" id="m-color-hex" value="${curColor}" style="border:1px solid #ddd;border-radius:6px;padding:3px 7px;font-size:12px;width:80px;font-family:monospace;">
+    </div>
+    <div style="margin-top:12px;font-size:13px;color:#555;">
+      ${hasTabs
+        ? `<b>已有 ${widget.tabs.length} 个子 Tab</b>，可在控件内直接双击 Tab 名重命名、点 + 新增。`
+        : `<label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+             <input type="checkbox" id="m-enable-tabs"> 启用子 Tab（将现有书签转入第一个 Tab）
+           </label>`}
+    </div>
+    <div class="modal-actions"><button class="btn btn-secondary" id="modal-cancel">取消</button><button class="btn btn-primary" id="modal-submit">保存</button></div>`,
+    (modal) => {
+      pushUndo();
+      widget.title = modal.querySelector('#m-title').value.trim() || widget.title;
+      let hex = modal.querySelector('#m-color-hex').value.trim();
+      widget.iconColor = /^#[0-9a-fA-F]{6}$/.test(hex) ? hex : curColor;
+      if (!hasTabs) {
+        let enableTabs = modal.querySelector('#m-enable-tabs')?.checked;
+        if (enableTabs) {
+          let firstName = prompt('第一个子 Tab 名称:', '默认') || '默认';
+          widget.tabs = [{ id: uid(), name: firstName.trim(), bookmarks: widget.bookmarks || [] }];
+          widget.bookmarks = [];
+          widget._activeTabId = widget.tabs[0].id;
+        }
+      }
+      save(); render(); return true;
+    },
+    null,
+    (modal) => {
+      // 色块点击
+      modal.querySelectorAll('.w-swatch').forEach(sw => {
+        sw.onclick = () => {
+          modal.querySelectorAll('.w-swatch').forEach(s => s.style.borderColor='transparent');
+          sw.style.borderColor = '#333';
+          modal.querySelector('#m-color').value = sw.dataset.val;
+          modal.querySelector('#m-color-hex').value = sw.dataset.val;
+        };
+      });
+      // color input
+      modal.querySelector('#m-color').oninput = (e) => {
+        modal.querySelector('#m-color-hex').value = e.target.value;
+      };
+      modal.querySelector('#m-color-hex').oninput = (e) => {
+        let v = e.target.value.trim();
+        if (/^#[0-9a-fA-F]{6}$/.test(v)) modal.querySelector('#m-color').value = v;
+      };
+    }
+  );
+}
+// ===== ICON SYSTEM =====
+// icon value formats:
+//   "favicon"          → auto fetch site favicon
+//   "tabler:home-2"    → /icons/tabler/home-2.svg
+//   "simple:github"    → /icons/simple/github.svg
+//   "https://..."      → external image URL
+
+const TABLER_CDN = '/icons/tabler/';
+const SIMPLE_CDN = '/icons/simple/';
+
+function isTabler(icon) { return icon && icon.startsWith('tabler:'); }
+function isSimple(icon) { return icon && icon.startsWith('simple:'); }
+function tablerName(icon) {
+  // tabler:home  或  tabler:home#ff0000  → 图标名
+  let s = icon.slice(7); return s.includes('#') ? s.slice(0, s.indexOf('#')) : s;
+}
+function tablerColor(icon) {
+  // 返回颜色，默认蓝色
+  let s = icon.slice(7); let idx = s.indexOf('#');
+  return idx !== -1 ? '#' + s.slice(idx + 1) : null;
+}
+function simpleName(icon) { return icon.slice(7); }
+
+function iconUrl(icon) {
+  if (isTabler(icon)) return TABLER_CDN + tablerName(icon) + '.svg';
+  if (isSimple(icon)) return SIMPLE_CDN + simpleName(icon) + '.svg';
+  return '';
+}
+
+// Get Simple Icons brand color, return css color string
+function simpleColor(name) {
+  if (typeof SIMPLE_COLORS !== 'undefined' && SIMPLE_COLORS[name]) return SIMPLE_COLORS[name];
+  return '#555';
+}
+
+// Convert hex color to CSS filter (approximate, good enough for icons)
+function hexToFilter(hex) {
+  // Use a background-color trick: wrap in colored div isn't ideal
+  // Instead use SVG inline coloring via fetch+replace (too complex)
+  // Best approach: use CSS mask-image with background-color
+  return hex; // returned as background color for mask approach
+}
+
+function renderIconInEl(el, icon, faviconUrl, overrideColor) {
+  el.innerHTML = '';
+  el.style.fontSize = '';
+  el.style.background = '';
+  if (!icon || icon === 'favicon') {
+    let img = document.createElement('img');
+    img.src = faviconUrl || '';
+    img.style.cssText = 'width:28px;height:28px;border-radius:4px;';
+    img.onerror = () => { el.textContent = '🔗'; };
+    el.appendChild(img);
+  } else if (isTabler(icon)) {
+    let color = overrideColor || tablerColor(icon) || '#1a73e8';
+    let name = tablerName(icon);
+    let mask = document.createElement('div');
+    mask.style.cssText = `width:28px;height:28px;background-color:${color};flex-shrink:0;
+      -webkit-mask-image:url('${TABLER_CDN}${name}.svg');mask-image:url('${TABLER_CDN}${name}.svg');
+      -webkit-mask-size:contain;mask-size:contain;
+      -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+      -webkit-mask-position:center;mask-position:center;`;
+    el.appendChild(mask);
+  } else if (isSimple(icon)) {
+    let name = simpleName(icon);
+    let color = simpleColor(name);
+    // Use mask-image approach: SVG as mask, background-color as color
+    let mask = document.createElement('div');
+    mask.style.cssText = `width:28px;height:28px;background-color:${color};
+      -webkit-mask-image:url('/icons/simple/${name}.svg');
+      mask-image:url('/icons/simple/${name}.svg');
+      -webkit-mask-size:contain;mask-size:contain;
+      -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+      -webkit-mask-position:center;mask-position:center;`;
+    el.appendChild(mask);
+  } else if (icon.startsWith('http')) {
+    let img = document.createElement('img');
+    img.src = icon; img.style.cssText = 'width:28px;height:28px;border-radius:4px;';
+    img.onerror = () => { el.textContent = '🔗'; };
+    el.appendChild(img);
+  } else {
+    el.style.fontSize = '22px';
+    el.textContent = icon;
+  }
+}
+
+// Defaults shown before any search
+const TABLER_DEFAULTS = [
+  'home-2','star','bookmark','link','search','settings','tool','chart-bar',
+  'brand-github','brand-google','brand-youtube','brand-twitter','brand-slack',
+  'brand-discord','brand-figma','brand-notion','brand-vercel',
+  'mail','calendar','file-text','folder','code','terminal','database',
+  'cloud','lock','bell','message','user','heart','bulb','rocket',
+  'news','book','music','video','photo','map','cpu','bug',
+  'chart-line','table','api','server','wifi','globe','key','shield',
+];
+const SIMPLE_DEFAULTS = [
+  'github','google','youtube','twitter','instagram','facebook','linkedin',
+  'slack','discord','notion','figma','vercel','netlify','cloudflare',
+  'amazonaws','googlecloud','microsoftazure','docker','kubernetes',
+  'react','vuedotjs','angular','nextdotjs','svelte','tailwindcss',
+  'typescript','javascript','python','go','rust','java','cplusplus',
+  'postgresql','mysql','mongodb','redis','elasticsearch',
+  'gitlab','bitbucket','jira','confluence','trello',
+];
+
+let _iconSearchTimer = null;
+
+// 预设颜色（12色）
+const ICON_COLORS = [
+  {label:'蓝',   val:'#1a73e8'}, {label:'天蓝', val:'#0ea5e9'},
+  {label:'绿',   val:'#16a34a'}, {label:'青',   val:'#0d9488'},
+  {label:'橙',   val:'#f97316'}, {label:'黄',   val:'#eab308'},
+  {label:'红',   val:'#ef4444'}, {label:'粉',   val:'#ec4899'},
+  {label:'紫',   val:'#8b5cf6'}, {label:'靛',   val:'#6366f1'},
+  {label:'灰',   val:'#6b7280'}, {label:'深',   val:'#1e293b'},
+];
+
+function showTablerColorPicker(anchorEl, iconBase, currentIcon, onSelect) {
+  document.querySelector('.color-picker-popup')?.remove();
+
+  // 当前已有颜色
+  let curColor = (isTabler(currentIcon) && tablerName(currentIcon) === tablerName(iconBase))
+    ? (tablerColor(currentIcon) || '#1a73e8') : '#1a73e8';
+
+  let pop = document.createElement('div');
+  pop.className = 'color-picker-popup';
+  pop.style.cssText = `position:fixed;background:#fff;border-radius:10px;
+    box-shadow:0 6px 24px rgba(0,0,0,0.18);padding:10px 12px;z-index:10000;width:240px;`;
+
+  let title = document.createElement('div');
+  title.style.cssText = 'font-size:12px;color:#888;margin-bottom:8px;';
+  title.textContent = '选择图标颜色';
+  pop.appendChild(title);
+
+  let swatches = document.createElement('div');
+  swatches.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;';
+
+  let selectedColor = curColor;
+
+  ICON_COLORS.forEach(c => {
+    let sw = document.createElement('div');
+    sw.title = c.label;
+    sw.style.cssText = `width:24px;height:24px;border-radius:50%;background:${c.val};cursor:pointer;
+      border:2px solid ${c.val === selectedColor ? '#333' : 'transparent'};box-sizing:border-box;transition:border-color 0.1s;`;
+    sw.onclick = () => {
+      selectedColor = c.val;
+      pop.querySelectorAll('.swatch').forEach(s => s.style.borderColor='transparent');
+      sw.style.borderColor='#333';
+      hexInput.value = c.val;
+      updatePreview();
+    };
+    sw.className = 'swatch';
+    swatches.appendChild(sw);
+  });
+  pop.appendChild(swatches);
+
+  // 自定义颜色 input
+  let row = document.createElement('div');
+  row.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:10px;';
+  let colorDot = document.createElement('input');
+  colorDot.type = 'color'; colorDot.value = selectedColor;
+  colorDot.style.cssText = 'width:28px;height:28px;border:none;padding:0;cursor:pointer;border-radius:4px;background:none;';
+  let hexInput = document.createElement('input');
+  hexInput.type='text'; hexInput.value = selectedColor;
+  hexInput.style.cssText='border:1px solid #ddd;border-radius:6px;padding:4px 8px;font-size:12px;width:90px;font-family:monospace;';
+  let previewMask = document.createElement('div');
+  previewMask.style.cssText = `width:24px;height:24px;background-color:${selectedColor};flex-shrink:0;
+    -webkit-mask-image:url('${TABLER_CDN}${tablerName(iconBase)}.svg');mask-image:url('${TABLER_CDN}${tablerName(iconBase)}.svg');
+    -webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+    -webkit-mask-position:center;mask-position:center;`;
+
+  function updatePreview() {
+    previewMask.style.backgroundColor = selectedColor;
+    colorDot.value = selectedColor;
+    hexInput.value = selectedColor;
+  }
+  colorDot.oninput = () => { selectedColor = colorDot.value; hexInput.value = selectedColor; updatePreview(); };
+  hexInput.oninput = () => {
+    let v = hexInput.value.trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(v)) { selectedColor = v; updatePreview(); }
+  };
+  row.appendChild(colorDot); row.appendChild(hexInput); row.appendChild(previewMask);
+  pop.appendChild(row);
+
+  // 按钮行
+  let btns = document.createElement('div');
+  btns.style.cssText='display:flex;justify-content:flex-end;gap:8px;';
+  let cancelBtn = document.createElement('button');
+  cancelBtn.textContent='取消'; cancelBtn.style.cssText='border:1px solid #ddd;background:#fff;border-radius:6px;padding:4px 12px;font-size:12px;cursor:pointer;';
+  cancelBtn.onclick = () => pop.remove();
+  let okBtn = document.createElement('button');
+  okBtn.textContent='确定'; okBtn.style.cssText='border:none;background:#1a73e8;color:#fff;border-radius:6px;padding:4px 12px;font-size:12px;cursor:pointer;';
+  okBtn.onclick = () => {
+    pop.remove();
+    let finalIcon = selectedColor === '#1a73e8' ? iconBase : iconBase + selectedColor.replace('#','#');
+    onSelect(finalIcon);
+  };
+  btns.appendChild(cancelBtn); btns.appendChild(okBtn);
+  pop.appendChild(btns);
+
+  document.body.appendChild(pop);
+  let ar = anchorEl.getBoundingClientRect();
+  let left = Math.min(ar.left, window.innerWidth - 250);
+  let top = ar.bottom + 4;
+  if (top + 220 > window.innerHeight) top = ar.top - 224;
+  pop.style.left = Math.max(8,left)+'px'; pop.style.top = Math.max(8,top)+'px';
+
+  setTimeout(() => {
+    document.addEventListener('mousedown', function h(e) {
+      if (!pop.contains(e.target) && e.target !== anchorEl) {
+        pop.remove(); document.removeEventListener('mousedown', h);
+      }
+    });
+  }, 50);
+}
+
+function showIconPicker(anchorEl, currentIcon, faviconUrl, onSelect) {
+  document.querySelector('.icon-picker-popup')?.remove();
+
+  let picker = document.createElement('div');
+  picker.className = 'icon-picker-popup';
+  picker.style.cssText = `position:fixed;background:#fff;border-radius:12px;
+    box-shadow:0 8px 32px rgba(0,0,0,0.2);padding:14px;
+    z-index:9999;width:320px;max-height:460px;display:flex;flex-direction:column;gap:8px;`;
+
+  // Row 1: Favicon
+  let favOpt = document.createElement('div');
+  favOpt.style.cssText = `display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:8px;cursor:pointer;
+    border:2px solid ${!currentIcon||currentIcon==='favicon'?'#1a73e8':'#e0e0e0'};
+    background:${!currentIcon||currentIcon==='favicon'?'#f0f6ff':'#f9f9f9'};`;
+  let favImg = document.createElement('img');
+  favImg.src = faviconUrl; favImg.style.cssText='width:20px;height:20px;border-radius:3px;flex-shrink:0;';
+  favImg.onerror = () => { favImg.style.display='none'; };
+  let favTxt = document.createElement('span');
+  favTxt.style.cssText='font-size:12px;color:#444;';
+  favTxt.textContent = '自动获取网站图标（favicon）';
+  favOpt.appendChild(favImg); favOpt.appendChild(favTxt);
+  favOpt.onclick = () => { onSelect('favicon'); picker.remove(); };
+  picker.appendChild(favOpt);
+
+  // Row 2: Tab switcher + search
+  let activeLib = isSimple(currentIcon) ? 'simple' : 'tabler';
+  let tabRow = document.createElement('div');
+  tabRow.style.cssText = 'display:flex;gap:6px;align-items:center;';
+  function makeTab(lib, label) {
+    let t = document.createElement('button');
+    t.textContent = label;
+    t.style.cssText = `border:none;border-radius:6px;padding:4px 12px;font-size:12px;cursor:pointer;
+      background:${activeLib===lib?'#1a73e8':'#f1f3f4'};color:${activeLib===lib?'#fff':'#555'};`;
+    t.onclick = () => { activeLib = lib; updateTabs(); doSearch(searchBox.value.trim().toLowerCase()); };
+    t.dataset.lib = lib;
+    return t;
+  }
+  let tabTabler = makeTab('tabler', 'Tabler');
+  let tabSimple = makeTab('simple', 'Simple Icons');
+  function updateTabs() {
+    [tabTabler, tabSimple].forEach(t => {
+      let on = t.dataset.lib === activeLib;
+      t.style.background = on ? '#1a73e8' : '#f1f3f4';
+      t.style.color = on ? '#fff' : '#555';
+    });
+  }
+  tabRow.appendChild(tabTabler); tabRow.appendChild(tabSimple);
+  picker.appendChild(tabRow);
+
+  let searchBox = document.createElement('input');
+  searchBox.style.cssText = 'border:1px solid #ddd;border-radius:8px;padding:7px 10px;font-size:13px;outline:none;width:100%;';
+  searchBox.placeholder = '搜索图标（英文）: github, home, chart...';
+  picker.appendChild(searchBox);
+
+  let gridWrap = document.createElement('div'); gridWrap.style.cssText = 'overflow-y:auto;flex:1;';
+  let grid = document.createElement('div');
+  grid.style.cssText = 'display:grid;grid-template-columns:repeat(7,1fr);gap:4px;';
+  gridWrap.appendChild(grid); picker.appendChild(gridWrap);
+
+  function buildGrid(names, lib) {
+    grid.innerHTML = '';
+    if (!names.length) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#aaa;font-size:12px;padding:20px 0;">没有找到匹配图标</div>';
+      return;
+    }
+    names.forEach(name => {
+      let fullIcon = lib + ':' + name;
+      let sel = currentIcon === fullIcon;
+      let cell = document.createElement('div');
+      cell.title = name;
+      cell.style.cssText = `width:36px;height:36px;border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+        border:2px solid ${sel?'#1a73e8':'transparent'};background:${sel?'#f0f6ff':'transparent'};`;
+      cell.onmouseover = () => { if(!sel) cell.style.background='#f1f3f4'; };
+      cell.onmouseout  = () => { if(!sel) cell.style.background= sel?'#f0f6ff':'transparent'; };
+      let img;
+      if (lib === 'tabler') {
+        img = document.createElement('img');
+        img.src = TABLER_CDN + name + '.svg';
+        img.style.cssText='width:20px;height:20px;filter:invert(28%) sepia(85%) saturate(1200%) hue-rotate(200deg) brightness(90%);';
+        img.onerror = () => { cell.style.display='none'; };
+        cell.appendChild(img);
+      } else {
+        let color = simpleColor(name);
+        let mask = document.createElement('div');
+        mask.style.cssText = `width:20px;height:20px;background-color:${color};
+          -webkit-mask-image:url('/icons/simple/${name}.svg');mask-image:url('/icons/simple/${name}.svg');
+          -webkit-mask-size:contain;mask-size:contain;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+          -webkit-mask-position:center;mask-position:center;`;
+        cell.appendChild(mask);
+      }
+      cell.onclick = () => {
+        if (lib === 'tabler') {
+          // 选颜色后再回调
+          showTablerColorPicker(cell, fullIcon, currentIcon, (iconWithColor) => {
+            onSelect(iconWithColor); picker.remove();
+          });
+        } else {
+          onSelect(fullIcon); picker.remove();
+        }
+      };
+      grid.appendChild(cell);
+    });
+  }
+
+  function doSearch(q) {
+    let names, lib = activeLib;
+    let allNames = (typeof ICON_NAMES !== 'undefined') ? ICON_NAMES[lib] : (lib==='tabler' ? TABLER_DEFAULTS : SIMPLE_DEFAULTS);
+    let defaults = lib==='tabler' ? TABLER_DEFAULTS : SIMPLE_DEFAULTS;
+    if (!q) { buildGrid(defaults, lib); return; }
+    names = allNames.filter(n => n.includes(q)).slice(0, 70);
+    buildGrid(names, lib);
+  }
+
+  buildGrid(activeLib==='tabler' ? TABLER_DEFAULTS : SIMPLE_DEFAULTS, activeLib);
+
+  searchBox.oninput = () => {
+    clearTimeout(_iconSearchTimer);
+    _iconSearchTimer = setTimeout(() => doSearch(searchBox.value.trim().toLowerCase()), 100);
+  };
+
+  // Position
+  document.body.appendChild(picker);
+  let ar = anchorEl.getBoundingClientRect();
+  let left = Math.min(ar.left, window.innerWidth - 330);
+  let top = ar.bottom + 6;
+  if (top + 460 > window.innerHeight) top = ar.top - 466;
+  picker.style.left = Math.max(8, left) + 'px';
+  picker.style.top = Math.max(8, top) + 'px';
+
+  setTimeout(() => {
+    searchBox.focus();
+    document.addEventListener('mousedown', function h(e) {
+      if (!picker.contains(e.target) && e.target !== anchorEl) {
+        picker.remove(); document.removeEventListener('mousedown', h);
+      }
+    });
+  }, 50);
+  return picker;
+}
+
+function showBookmarkModal({title, nameVal='', urlVal='', iconVal='favicon', onSubmit, onDelete}) {
+  let overlay = document.createElement('div'); overlay.className='modal-overlay';
+  let modal = document.createElement('div'); modal.className='modal';
+  modal.innerHTML = `
+    <h3>${title}</h3>
+    <label>名称</label><input id="m-name" value="${nameVal.replace(/"/g,'&quot;')}" placeholder="书签名称">
+    <label>URL</label><input id="m-url" value="${urlVal.replace(/"/g,'&quot;')}" placeholder="https://...">
+    <label style="display:block;margin-top:12px;margin-bottom:6px;font-size:13px;color:#555;">图标</label>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div id="icon-preview" style="width:44px;height:44px;border:2px solid #e0e0e0;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#f9f9f9;flex-shrink:0;transition:border-color 0.15s;"></div>
+      <div style="font-size:12px;color:#888;line-height:1.5;">点击图标选择<br><span style="color:#aaa;">Tabler Icons / 网站 favicon</span></div>
+    </div>
+    <div class="modal-actions">
+      ${onDelete ? '<button class="btn btn-danger" id="modal-delete">删除</button>' : ''}
+      <button class="btn btn-secondary" id="modal-cancel">取消</button>
+      <button class="btn btn-primary" id="modal-submit">保存</button>
+    </div>`;
+
+  let currentIcon = iconVal;
+
+  function updatePreview() {
+    let preview = modal.querySelector('#icon-preview');
+    renderIconInEl(preview, currentIcon, getFavicon(modal.querySelector('#m-url').value));
+  }
+
+  overlay.appendChild(modal);
+  overlay.addEventListener('click', (e)=>{ if(e.target===overlay){ document.querySelector('.icon-picker-popup')?.remove(); overlay.remove(); } });
+  document.body.appendChild(overlay);
+
+  updatePreview();
+
+  modal.querySelector('#m-url').oninput = () => {
+    let urlNow = modal.querySelector('#m-url').value;
+    if (!currentIcon || currentIcon === 'favicon') {
+      let guessed = guessIconByUrl(urlNow);
+      if (guessed) { currentIcon = guessed; }
+      updatePreview();
+    }
+  };
+
+  let previewEl = modal.querySelector('#icon-preview');
+  previewEl.onmouseenter = () => previewEl.style.borderColor = '#1a73e8';
+  previewEl.onmouseleave = () => previewEl.style.borderColor = '#e0e0e0';
+  previewEl.onclick = (e) => {
+    e.stopPropagation();
+    showIconPicker(previewEl, currentIcon, getFavicon(modal.querySelector('#m-url').value), (icon) => {
+      currentIcon = icon; updatePreview();
+    });
+  };
+
+  if (onDelete) modal.querySelector('#modal-delete').onclick = () => { overlay.remove(); onDelete(); };
+  modal.querySelector('#modal-cancel').onclick = () => overlay.remove();
+  modal.querySelector('#modal-submit').onclick = () => {
+    if (onSubmit(modal, currentIcon)) overlay.remove();
+  };
+  setTimeout(() => modal.querySelector('#m-name').focus(), 50);
+}
+
+// 根据 URL 自动推断默认图标
+const URL_ICON_RULES = [
+  { domain: 'sphinx.woa.com',      icon: 'tabler:device-laptop' },
+  { domain: 'mmdata.woa.com',      icon: 'tabler:database' },
+  { domain: 'iwiki.woa.com',       icon: 'tabler:books' },
+  { domain: 'doc.weixin.qq.com',   icon: 'tabler:file-description' },
+];
+
+function guessIconByUrl(url) {
+  if (!url) return null;
+  for (let rule of URL_ICON_RULES) {
+    if (url.includes(rule.domain)) return rule.icon;
+  }
+  return null;
+}
+
+function addBookmark(widget, bms) {
+  let targetBms = bms || widget.bookmarks;
+  showBookmarkModal({
+    title: '添加书签',
+    onSubmit: (modal, icon) => {
+      let name=modal.querySelector('#m-name').value.trim(), url=modal.querySelector('#m-url').value.trim();
+      if(!name||!url){alert('名称和URL必填');return false;}
+      pushUndo();
+      targetBms.push({id:uid(),name,url,icon});
+      save(); render(); return true;
+    }
+  });
+}
+
+function editBookmark(widget, bm, bi, bms) {
+  let targetBms = bms || widget.bookmarks;
+  showBookmarkModal({
+    title: '编辑书签',
+    nameVal: bm.name, urlVal: bm.url, iconVal: bm.icon||'favicon',
+    onSubmit: (modal, icon) => {
+      pushUndo();
+      bm.name=modal.querySelector('#m-name').value.trim()||bm.name;
+      bm.url=modal.querySelector('#m-url').value.trim()||bm.url;
+      bm.icon=icon;
+      save(); render(); return true;
+    },
+    onDelete: () => { pushUndo(); targetBms.splice(bi,1); save(); render(); }
+  });
+}
+function addEngine() {
+  showModal(`<h3>添加搜索引擎</h3><label>名称</label><input id="m-name" placeholder="名称"><label>URL（{query}代表搜索词）</label><input id="m-url" placeholder="https://...?q={query}"><label>图标URL（可留空）</label><input id="m-icon">
+    <div class="modal-actions"><button class="btn btn-secondary" id="modal-cancel">取消</button><button class="btn btn-primary" id="modal-submit">添加</button></div>`,
+    (modal) => {
+      let name=modal.querySelector('#m-name').value.trim(), url=modal.querySelector('#m-url').value.trim();
+      if(!name||!url){alert('名称和URL必填');return false;}
+      data.searchEngines.push({id:uid(),name,url,icon:modal.querySelector('#m-icon').value.trim()||''});
+      save(); render(); return true;
+    });
+}
+
+// ===== INIT =====
+loadData();
+</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+{
+  "pageBgColor": "#f0f2f5",
+  "tabs": [
+    {
+      "id": "t1",
+      "name": "🏠 Home",
+      "columns": [
+        {
+          "id": "c1",
+          "widgets": [
+            {
+              "id": "w1",
+              "type": "bookmarks",
+              "title": "🔧 Dev Tools",
+              "bookmarks": [
+                {"id": "b1", "name": "GitHub", "url": "https://github.com", "icon": "favicon"},
+                {"id": "b2", "name": "Stack Overflow", "url": "https://stackoverflow.com", "icon": "favicon"},
+                {"id": "b3", "name": "MDN Web Docs", "url": "https://developer.mozilla.org", "icon": "favicon"},
+                {"id": "b4", "name": "VS Code", "url": "https://code.visualstudio.com", "icon": "favicon"}
+              ]
+            },
+            {
+              "id": "w2",
+              "type": "bookmarks",
+              "title": "☁️ Cloud & Infra",
+              "bookmarks": [
+                {"id": "b5", "name": "AWS Console", "url": "https://console.aws.amazon.com", "icon": "tabler:brand-aws"},
+                {"id": "b6", "name": "Docker Hub", "url": "https://hub.docker.com", "icon": "favicon"},
+                {"id": "b7", "name": "Vercel", "url": "https://vercel.com", "icon": "favicon"}
+              ]
+            }
+          ]
+        },
+        {
+          "id": "c2",
+          "widgets": [
+            {
+              "id": "w3",
+              "type": "bookmarks",
+              "title": "🎨 Design",
+              "bookmarks": [
+                {"id": "b8", "name": "Figma", "url": "https://figma.com", "icon": "favicon"},
+                {"id": "b9", "name": "Dribbble", "url": "https://dribbble.com", "icon": "favicon"},
+                {"id": "b10", "name": "Unsplash", "url": "https://unsplash.com", "icon": "favicon"}
+              ]
+            },
+            {
+              "id": "w4",
+              "type": "memo",
+              "title": "📝 Quick Notes",
+              "content": "Welcome to your personal navigation page!\n\n- Edit mode: click ✎ button\n- Add bookmarks, memos, or more tabs\n- Supports Tabler icons + favicon auto-fetch"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "t2",
+      "name": "📚 Learning",
+      "columns": [
+        {
+          "id": "c3",
+          "widgets": [
+            {
+              "id": "w5",
+              "type": "bookmarks",
+              "title": "📖 Resources",
+              "bookmarks": [
+                {"id": "b11", "name": "arXiv", "url": "https://arxiv.org", "icon": "favicon"},
+                {"id": "b12", "name": "Coursera", "url": "https://coursera.org", "icon": "favicon"},
+                {"id": "b13", "name": "Wikipedia", "url": "https://wikipedia.org", "icon": "favicon"}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

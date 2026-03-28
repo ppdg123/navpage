@@ -1,0 +1,6 @@
+favicon_cache/
+*.pyc
+__pycache__/
+*.log
+.env
+.DS_Store
