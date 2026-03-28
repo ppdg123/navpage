@@ -13,10 +13,30 @@
               "type": "bookmarks",
               "title": "🔧 Dev Tools",
               "bookmarks": [
-                {"id": "b1", "name": "GitHub", "url": "https://github.com", "icon": "favicon"},
-                {"id": "b2", "name": "Stack Overflow", "url": "https://stackoverflow.com", "icon": "favicon"},
-                {"id": "b3", "name": "MDN Web Docs", "url": "https://developer.mozilla.org", "icon": "favicon"},
-                {"id": "b4", "name": "VS Code", "url": "https://code.visualstudio.com", "icon": "favicon"}
+                {
+                  "id": "b1",
+                  "name": "GitHub",
+                  "url": "https://github.com",
+                  "icon": "favicon"
+                },
+                {
+                  "id": "b2",
+                  "name": "Stack Overflow",
+                  "url": "https://stackoverflow.com",
+                  "icon": "favicon"
+                },
+                {
+                  "id": "b3",
+                  "name": "MDN Web Docs",
+                  "url": "https://developer.mozilla.org",
+                  "icon": "favicon"
+                },
+                {
+                  "id": "b4",
+                  "name": "VS Code",
+                  "url": "https://code.visualstudio.com",
+                  "icon": "favicon"
+                }
               ]
             },
             {
@@ -24,9 +44,24 @@
               "type": "bookmarks",
               "title": "☁️ Cloud & Infra",
               "bookmarks": [
-                {"id": "b5", "name": "AWS Console", "url": "https://console.aws.amazon.com", "icon": "tabler:brand-aws"},
-                {"id": "b6", "name": "Docker Hub", "url": "https://hub.docker.com", "icon": "favicon"},
-                {"id": "b7", "name": "Vercel", "url": "https://vercel.com", "icon": "favicon"}
+                {
+                  "id": "b5",
+                  "name": "AWS Console",
+                  "url": "https://console.aws.amazon.com",
+                  "icon": "tabler:brand-aws"
+                },
+                {
+                  "id": "b6",
+                  "name": "Docker Hub",
+                  "url": "https://hub.docker.com",
+                  "icon": "favicon"
+                },
+                {
+                  "id": "b7",
+                  "name": "Vercel",
+                  "url": "https://vercel.com",
+                  "icon": "favicon"
+                }
               ]
             }
           ]
@@ -39,9 +74,24 @@
               "type": "bookmarks",
               "title": "🎨 Design",
               "bookmarks": [
-                {"id": "b8", "name": "Figma", "url": "https://figma.com", "icon": "favicon"},
-                {"id": "b9", "name": "Dribbble", "url": "https://dribbble.com", "icon": "favicon"},
-                {"id": "b10", "name": "Unsplash", "url": "https://unsplash.com", "icon": "favicon"}
+                {
+                  "id": "b8",
+                  "name": "Figma",
+                  "url": "https://figma.com",
+                  "icon": "favicon"
+                },
+                {
+                  "id": "b9",
+                  "name": "Dribbble",
+                  "url": "https://dribbble.com",
+                  "icon": "favicon"
+                },
+                {
+                  "id": "b10",
+                  "name": "Unsplash",
+                  "url": "https://unsplash.com",
+                  "icon": "favicon"
+                }
               ]
             },
             {
@@ -66,14 +116,44 @@
               "type": "bookmarks",
               "title": "📖 Resources",
               "bookmarks": [
-                {"id": "b11", "name": "arXiv", "url": "https://arxiv.org", "icon": "favicon"},
-                {"id": "b12", "name": "Coursera", "url": "https://coursera.org", "icon": "favicon"},
-                {"id": "b13", "name": "Wikipedia", "url": "https://wikipedia.org", "icon": "favicon"}
+                {
+                  "id": "b11",
+                  "name": "arXiv",
+                  "url": "https://arxiv.org",
+                  "icon": "favicon"
+                },
+                {
+                  "id": "b12",
+                  "name": "Coursera",
+                  "url": "https://coursera.org",
+                  "icon": "favicon"
+                },
+                {
+                  "id": "b13",
+                  "name": "Wikipedia",
+                  "url": "https://wikipedia.org",
+                  "icon": "favicon"
+                }
               ]
             }
           ]
         }
       ]
     }
-  ]
+  ],
+  "searchEngines": [
+    {
+      "id": "se1",
+      "name": "Google",
+      "url": "https://www.google.com/search?q={query}",
+      "icon": "https://www.google.com/favicon.ico"
+    },
+    {
+      "id": "se2",
+      "name": "DuckDuckGo",
+      "url": "https://duckduckgo.com/?q={query}",
+      "icon": "https://duckduckgo.com/favicon.ico"
+    }
+  ],
+  "activeEngine": "se1"
 }

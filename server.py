@@ -58,7 +58,15 @@ def save_data(data):
 
 @app.route('/api/data', methods=['GET'])
 def get_data():
-    return jsonify(load())
+    d = load()
+    # Ensure required fields exist with defaults
+    if 'searchEngines' not in d:
+        d['searchEngines'] = DEFAULT_DATA['searchEngines']
+    if 'activeEngine' not in d:
+        d['activeEngine'] = DEFAULT_DATA['activeEngine']
+    if 'pageBgColor' not in d:
+        d['pageBgColor'] = DEFAULT_DATA.get('pageBgColor', '#f0f2f5')
+    return jsonify(d)
 
 @app.route('/api/data', methods=['POST'])
 def post_data():
