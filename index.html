@@ -215,56 +215,8 @@ let activeTabId = '';
 let editMode = false;
 let saveTimer = null;
 
-const EDIT_AUTH_KEY = 'nav_edit_authed';
-const EDIT_PWD_HASH = '397b0f5bb6a69c2acb6385f303cd319496fce2b69eff9d2ad68cb03ae64a2540';
-
-async function sha256(str) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-}
-
 function requireEditAuth(onSuccess) {
-  if (localStorage.getItem(EDIT_AUTH_KEY) === '1') { onSuccess(); return; }
-  let overlay = document.createElement('div'); overlay.className = 'modal-overlay';
-  let box = document.createElement('div'); box.className = 'modal'; box.style.maxWidth = '320px';
-  box.innerHTML = `<h3>编辑模式</h3><label>请输入密码</label>
-    <input id="auth-pwd" type="password" placeholder="密码" style="margin-top:8px;" autocomplete="current-password">
-    <div id="auth-err" style="color:#d93025;font-size:12px;margin-top:6px;min-height:16px;"></div>
-    <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end;">
-      <button id="auth-cancel" class="btn" style="background:#f1f3f4;color:#333;">取消</button>
-      <button id="auth-ok" class="btn btn-primary">确定</button>
-    </div>`;
-  overlay.appendChild(box); document.body.appendChild(overlay);
-  const pwdInput = box.querySelector('#auth-pwd');
-  const errEl = box.querySelector('#auth-err');
-  setTimeout(() => pwdInput.focus(), 50);
-
-  async function doAuth() {
-    const val = pwdInput.value;
-    if (!val) { errEl.textContent = '请输入密码'; return; }
-    if (!crypto || !crypto.subtle) {
-      errEl.textContent = '请使用 HTTPS 访问以启用安全验证';
-      return;
-    }
-    errEl.textContent = '验证中...';
-    try {
-      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(val));
-      const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-      if (hash === EDIT_PWD_HASH) {
-        localStorage.setItem(EDIT_AUTH_KEY, '1');
-        overlay.remove(); onSuccess();
-      } else {
-        errEl.textContent = '密码错误，请重试';
-        pwdInput.value = ''; pwdInput.focus();
-      }
-    } catch(e) {
-      errEl.textContent = '验证失败：' + e.message;
-    }
-  }
-  box.querySelector('#auth-ok').onclick = doAuth;
-  pwdInput.onkeydown = (e) => { if (e.key === 'Enter') doAuth(); if (e.key === 'Escape') overlay.remove(); };
-  box.querySelector('#auth-cancel').onclick = () => overlay.remove();
-  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  onSuccess();
 }
 
 // ===== UNDO =====
